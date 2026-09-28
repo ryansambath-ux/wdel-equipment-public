@@ -1,0 +1,2341 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipment Monitoring - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1a5276">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Equipment Monitor">
+    <link rel="manifest" href="manifestpw.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+    
+    <style>
+        :root {
+            --primary-color: #1a5276;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        /* Login Screen Styles */
+        .login-screen {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        
+        .login-title {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .form-control {
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+        }
+        
+        .password-input {
+            position: relative;
+        }
+
+        /* Main Application Styles */
+        .main-application {
+            display: none;
+            width: 100%;
+        }
+        
+        body.app-loaded {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2c3e50;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 0 0 15px 15px;
+        }
+        
+        .card {
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-bottom: 1.5rem;
+            border: none;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-weight: 600;
+            padding: 1rem 1.25rem;
+        }
+        
+        .stats-card {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 12px;
+            background: white;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stats-card.active {
+            border: 3px solid var(--secondary-color);
+        }
+        
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .status-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-in-service {
+            background-color: rgba(39, 174, 96, 0.15);
+            color: var(--success-color);
+        }
+        
+        .status-out-of-service {
+            background-color: rgba(231, 76, 60, 0.15);
+            color: var(--danger-color);
+        }
+        
+        .status-unknown {
+            background-color: rgba(149, 165, 166, 0.15);
+            color: #7f8c8d;
+        }
+        
+        .equipment-item {
+            cursor: pointer;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+        
+        .equipment-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .equipment-item.selected {
+            background-color: rgba(52, 152, 219, 0.1);
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .detail-page {
+            display: none;
+        }
+        
+        .back-button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .back-button:hover {
+            background-color: #2980b9;
+        }
+        
+        .service-history-item {
+            padding: 1rem;
+            border-left: 4px solid var(--secondary-color);
+            background-color: white;
+            margin-bottom: 1rem;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .fault-item {
+            padding: 0.75rem;
+            background-color: rgba(231, 76, 60, 0.05);
+            border-left: 4px solid var(--danger-color);
+            margin-bottom: 0.5rem;
+            border-radius: 0 5px 5px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .fault-item.resolved {
+            background-color: rgba(39, 174, 96, 0.05);
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .service-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .service-oil {
+            background-color: rgba(243, 156, 18, 0.2);
+            color: var(--warning-color);
+        }
+        
+        .service-greasing {
+            background-color: rgba(52, 152, 219, 0.2);
+            color: var(--secondary-color);
+        }
+        
+        .service-full {
+            background-color: rgba(39, 174, 96, 0.2);
+            color: var(--success-color);
+        }
+        
+        .service-inspection {
+            background-color: rgba(155, 89, 182, 0.2);
+            color: #9b59b6;
+        }
+        
+        .service-repair {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: var(--danger-color);
+        }
+        
+        .filter-section {
+            background-color: white;
+            padding: 1.25rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .resolved-indicator {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background-color: var(--success-color);
+            color: white;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        
+        .location-history {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .location-history-item {
+            padding: 0.5rem;
+            border-left: 3px solid var(--secondary-color);
+            margin-bottom: 0.5rem;
+            background-color: white;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        /* FIXED: Image autofit styles */
+        .equipment-image {
+            width: 100%;
+            max-height: 300px;
+            height: auto;
+            object-fit: contain;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .equipment-image:hover {
+            transform: scale(1.02);
+        }
+        
+        .image-placeholder {
+            width: 100%;
+            height: 200px;
+            background-color: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            margin-bottom: 1rem;
+        }
+        
+        .service-images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .service-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .service-image:hover {
+            transform: scale(1.05);
+        }
+        
+        .search-box {
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+        
+        .section-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            border-bottom: 2px solid rgba(26, 82, 118, 0.1);
+            padding-bottom: 0.5rem;
+        }
+        
+        .list-group-item {
+            border: none;
+            padding: 1rem;
+        }
+        
+        .list-group-item:not(:last-child) {
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .notes-section {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .note-item {
+            padding: 0.75rem;
+            background-color: white;
+            border-left: 4px solid var(--secondary-color);
+            margin-bottom: 0.5rem;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .metrics-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            margin: 0.1rem;
+        }
+
+        .performance-chart {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .firebase-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-size: 0.8rem;
+            z-index: 1000;
+        }
+
+        .firebase-status.connected {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .firebase-status.disconnected {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        /* PWA Install Button */
+        .install-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 1000;
+            display: none;
+        }
+
+        .install-button:hover {
+            background: var(--secondary-color);
+        }
+
+        /* Image Album Styles */
+        .image-album-section {
+            margin-top: 1rem;
+        }
+
+        .album-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .album-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .album-date {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .album-images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .album-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .album-image:hover {
+            transform: scale(1.1);
+        }
+
+        /* NEW: Quick Stats & Actions Panel */
+        .quick-stats-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 1.5rem;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .quick-action-btn {
+            width: 100%;
+            margin-bottom: 0.75rem;
+            padding: 0.75rem;
+            text-align: left;
+            border: none;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .quick-action-btn:hover {
+            background: var(--secondary-color);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .quick-stat-item {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .quick-stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+
+        .stat-icon.primary {
+            background: rgba(52, 152, 219, 0.1);
+            color: var(--secondary-color);
+        }
+
+        .stat-icon.success {
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--success-color);
+        }
+
+        .stat-icon.warning {
+            background: rgba(243, 156, 18, 0.1);
+            color: var(--warning-color);
+        }
+
+        .stat-icon.danger {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--danger-color);
+        }
+
+        /* Enhanced Faults & Issues Styles */
+        .fault-list-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 0.75rem;
+            background-color: white;
+            border-left: 4px solid var(--danger-color);
+            margin-bottom: 0.5rem;
+            border-radius: 0 5px 5px 0;
+            transition: all 0.3s ease;
+        }
+
+        .fault-list-item.resolved {
+            border-left-color: var(--success-color);
+            background-color: rgba(39, 174, 96, 0.05);
+        }
+
+        .fault-checkbox {
+            margin-right: 10px;
+            margin-top: 2px;
+            cursor: default;
+        }
+
+        .fault-text {
+            flex: 1;
+            margin: 0;
+        }
+
+        .fault-timestamp {
+            font-size: 0.75rem;
+            color: #666;
+            margin-left: 10px;
+        }
+
+        /* Maintenance Schedule Styles */
+        .maintenance-item {
+            padding: 0.75rem;
+            background-color: white;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid var(--success-color);
+            transition: all 0.3s ease;
+        }
+
+        .maintenance-item.overdue {
+            border-left-color: var(--danger-color);
+            background-color: rgba(231, 76, 60, 0.05);
+        }
+
+        .maintenance-due-input {
+            font-weight: bold;
+        }
+
+        .maintenance-due-input.negative {
+            color: var(--danger-color);
+        }
+
+        .maintenance-status {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="login-screen">
+    <!-- Login Screen -->
+    <div class="login-container" id="loginScreen" style="display:none">
+        <div style="background:#123b57;color:white;padding:9px 14px;border-radius:8px;margin-bottom:20px;text-align:center;font-size:.86rem">
+            <strong>Wabag District Enterprise Limited</strong><br>
+            Wabag District · Hon. Dr. Tom Lino, MP
+        </div>
+        <div class="logo">
+            <i class="fas fa-tools"></i>
+        </div>
+        <h1 class="login-title">Wabag District Equipment Monitoring</h1>
+        <p class="subtitle">Sign in to the equipment dashboard</p>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <input type="email" class="form-control" id="usernameInput" value="enterprisewabag@gmail.com" autocomplete="username" required>
+            </div>
+            <div class="form-group">
+                <div class="password-input">
+                    <input type="password" class="form-control" id="passwordInput" placeholder="Enter password" required>
+                    <button type="button" class="password-toggle" id="passwordToggle">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <div class="error-message" id="errorMessage">
+                    <i class="fas fa-exclamation-circle"></i> Sign in failed. Check the username and password.
+                </div>
+            </div>
+            <button type="submit" class="btn-login">
+                <i class="fas fa-lock me-2"></i> Access Dashboard
+            </button>
+        </form>
+        
+        <div class="mt-4" style="font-size: 0.9em; color: #666;">
+            <i class="fas fa-info-circle me-1"></i> Contact administrator for access
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div class="main-application" id="mainApplication" style="display:block">
+        <div style="background:#123b57;color:white;padding:9px 14px;text-align:center;font-size:.86rem">
+            <strong>Wabag District Enterprise Limited</strong> · Equipment Monitoring · Hon. Dr. Tom Lino, MP
+        </div>
+        <!-- PWA Install Button -->
+        <button class="install-button" id="installButton">
+            <i class="fas fa-download me-2"></i>Install App
+        </button>
+
+        <!-- Firebase Connection Status -->
+        <div class="firebase-status disconnected" id="firebaseStatus">
+            <i class="fas fa-database me-1"></i> <span id="firebaseStatusText">Connecting to Database...</span>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div class="container" id="dashboard">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1><i class="fas fa-tools me-2"></i>Wabag District Equipment Monitoring</h1>
+                            <p class="mb-0">Track equipment status, service history, and operational details</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="btn-group">
+                                <button class="btn btn-light" id="refreshBtn"><i class="fas fa-sync-alt me-1"></i> Refresh</button>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Equipment Summary Cards -->
+            <div class="row">
+                <div class="col-md-2">
+                    <div class="stats-card active" id="totalEquipmentCard" data-filter="all">
+                        <div class="stats-number text-primary" id="totalEquipment">0</div>
+                        <div class="stats-label">Total Equipment</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="stats-card" id="inServiceCard" data-filter="In Service">
+                        <div class="stats-number text-success" id="inServiceEquipment">0</div>
+                        <div class="stats-label">In Service</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="stats-card" id="outOfServiceCard" data-filter="Out of Service">
+                        <div class="stats-number text-danger" id="outOfServiceEquipment">0</div>
+                        <div class="stats-label">Out of Service</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="stats-card" id="requireServiceCard" data-filter="requireService">
+                        <div class="stats-number text-warning" id="requireServiceEquipment">0</div>
+                        <div class="stats-label">Require Service</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="stats-card" id="utilizationCard">
+                        <div class="stats-number text-info" id="utilizationRate">0%</div>
+                        <div class="stats-label">Utilization Rate</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="stats-card" id="costCard">
+                        <div class="stats-number text-secondary" id="avgCostPerHour">K0.00</div>
+                        <div class="stats-label">Avg Cost/Hour</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filter-section">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="statusFilter" class="form-label">Filter by Status</label>
+                        <select class="form-select" id="statusFilter">
+                            <option value="all">All Statuses</option>
+                            <option value="In Service">In Service</option>
+                            <option value="Out of Service">Out of Service</option>
+                            <option value="Unknown">Status Unknown</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="typeFilter" class="form-label">Filter by Type</label>
+                        <select class="form-select" id="typeFilter">
+                            <option value="all">All Types</option>
+                            <option value="Dozer">Dozer</option>
+                            <option value="Excavator">Excavator</option>
+                            <option value="Loader">Loader</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="locationFilter" class="form-label">Filter by Location</label>
+                        <select class="form-select" id="locationFilter">
+                            <option value="all">All Locations</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="projectFilter" class="form-label">Filter by Project</label>
+                        <select class="form-select" id="projectFilter">
+                            <option value="all">All Projects</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <!-- Equipment List -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Equipment List</span>
+                            <div class="input-group input-group-sm" style="width: 60%;">
+                                <input type="text" class="form-control search-box" placeholder="Search..." id="equipmentSearch">
+                                <button class="btn btn-outline-secondary" type="button"><i class="fas fa-search"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="list-group list-group-flush" id="equipmentList">
+                                <!-- Equipment items will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Equipment Details & Quick Stats Panel -->
+                <div class="col-md-8">
+                    <div class="row">
+                        <!-- Equipment Details -->
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    Equipment Details
+                                </div>
+                                <div class="card-body" id="equipmentDetails">
+                                    <div class="text-center text-muted p-4">
+                                        <i class="fas fa-info-circle fa-3x mb-3"></i>
+                                        <p>Select an equipment item to view details</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- NEW: Quick Stats & Actions Panel -->
+                        <div class="col-md-4">
+                            <div class="quick-stats-panel">
+                                <h6 class="section-title mb-3">Quick Stats & Actions</h6>
+                                
+                                <!-- Quick Actions -->
+                                <div class="mb-4">
+                                    <h6 class="small text-muted mb-2">QUICK ACTIONS</h6>
+                                    <button class="quick-action-btn" id="quickViewOutOfService">
+                                        <i class="fas fa-tools me-2"></i>View Out of Service
+                                    </button>
+                                    <button class="quick-action-btn" id="quickViewNeedsService">
+                                        <i class="fas fa-wrench me-2"></i>Needs Service
+                                    </button>
+                                    <button class="quick-action-btn" id="quickViewHighUtilization">
+                                        <i class="fas fa-chart-line me-2"></i>High Utilization
+                                    </button>
+                                    <button class="quick-action-btn" id="quickExportData">
+                                        <i class="fas fa-download me-2"></i>Export Data
+                                    </button>
+                                </div>
+
+                                <!-- Equipment Health -->
+                                <div class="mb-4">
+                                    <h6 class="small text-muted mb-2">EQUIPMENT HEALTH</h6>
+                                    <div class="quick-stat-item">
+                                        <div class="stat-icon success">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div>
+                                            <div class="small">Healthy Machines</div>
+                                            <strong id="healthyCount">0</strong>
+                                        </div>
+                                    </div>
+                                    <div class="quick-stat-item">
+                                        <div class="stat-icon warning">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </div>
+                                        <div>
+                                            <div class="small">Needs Attention</div>
+                                            <strong id="attentionCount">0</strong>
+                                        </div>
+                                    </div>
+                                    <div class="quick-stat-item">
+                                        <div class="stat-icon danger">
+                                            <i class="fas fa-times"></i>
+                                        </div>
+                                        <div>
+                                            <div class="small">Critical Issues</div>
+                                            <strong id="criticalCount">0</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Recent Activity -->
+                                <div>
+                                    <h6 class="small text-muted mb-2">RECENT ACTIVITY</h6>
+                                    <div id="recentActivity">
+                                        <div class="quick-stat-item">
+                                            <div class="stat-icon primary">
+                                                <i class="fas fa-sync"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small">Last Updated</div>
+                                                <strong id="lastUpdatedTime">Just now</strong>
+                                            </div>
+                                        </div>
+                                        <div class="quick-stat-item">
+                                            <div class="stat-icon success">
+                                                <i class="fas fa-calendar-check"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small">Services Today</div>
+                                                <strong id="servicesToday">0</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Equipment Detail Page -->
+        <div class="container detail-page" id="equipmentDetailPage">
+            <button class="back-button mb-4" id="backToDashboard">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </button>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0" id="detailEquipmentName">Equipment Details</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <!-- Equipment Cover Photo -->
+                            <div id="equipmentImageContainer">
+                                <!-- Cover photo will be populated here -->
+                            </div>
+                            
+                            <h5 class="section-title">Basic Information</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td style="width: 40%;"><strong>Owner:</strong></td>
+                                    <td id="detailOwner">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Type:</strong></td>
+                                    <td id="detailType">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Make & Model:</strong></td>
+                                    <td id="detailMakeModel">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Serial Number:</strong></td>
+                                    <td id="detailSerial">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>PIN:</strong></td>
+                                    <td id="detailPIN">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Location:</strong></td>
+                                    <td id="detailLocation">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Status:</strong></td>
+                                    <td id="detailStatus">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Current Project:</strong></td>
+                                    <td id="detailProject">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Assigned Operator:</strong></td>
+                                    <td id="detailOperator">-</td>
+                                </tr>
+                            </table>
+
+                            <!-- Performance Metrics -->
+                            <div class="performance-chart">
+                                <h6 class="section-title">Performance Metrics</h6>
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <div class="mb-2">
+                                            <strong id="detailEngineHours">0</strong>
+                                            <div class="small text-muted">Engine Hours</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="mb-2">
+                                            <strong id="detailFuelConsumption">0</strong>
+                                            <div class="small text-muted">L/hr</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="mb-2">
+                                            <strong id="detailUtilization">0%</strong>
+                                            <div class="small text-muted">Utilization</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row text-center mt-2">
+                                    <div class="col-4">
+                                        <div class="mb-2">
+                                            <strong id="detailCostPerHour">K0.00</strong>
+                                            <div class="small text-muted">Cost/Hour</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="mb-2">
+                                            <strong id="detailMTBF">0</strong>
+                                            <div class="small text-muted">MTBF (hrs)</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="mb-2">
+                                            <strong id="detailDowntime">0%</strong>
+                                            <div class="small text-muted">Downtime</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Enhanced Faults & Issues Section -->
+                            <div class="mt-4">
+                                <h6 class="section-title">Faults & Issues</h6>
+                                <div id="faultsList">
+                                    <!-- Enhanced faults list will be populated here -->
+                                </div>
+                            </div>
+                            
+                            <!-- Equipment Image Albums -->
+                            <div class="image-album-section">
+                                <h6 class="section-title">Equipment Photos</h6>
+                                <div id="equipmentAlbums">
+                                    <!-- Image albums will be populated here -->
+                                </div>
+                            </div>
+                            
+                            <!-- Location History -->
+                            <div class="location-history">
+                                <h6 class="section-title">Location History</h6>
+                                <div id="locationHistory">
+                                    <!-- Location history will be populated here -->
+                                </div>
+                            </div>
+                            
+                            <!-- Equipment Notes -->
+                            <div class="notes-section">
+                                <h6 class="section-title">Equipment Notes</h6>
+                                <div id="equipmentNotes">
+                                    <!-- Equipment notes will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="section-title">Service Information</h5>
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div>
+                                        <strong>Last Service:</strong> <span id="detailLastService">-</span>
+                                    </div>
+                                    <div>
+                                        <strong>Next Service:</strong> <span id="detailNextService">-</span>
+                                    </div>
+                                </div>
+                                <!-- Maintenance Schedule -->
+                                <div class="mt-3">
+                                    <h6 class="section-title">Maintenance Schedule</h6>
+                                    <div id="maintenanceSchedule">
+                                        <!-- Maintenance schedule will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="service-history">
+                                <h6 class="section-title">Full Service History</h6>
+                                <div id="serviceHistory">
+                                    <!-- Full service history will be populated here -->
+                                </div>
+                            </div>
+
+                            <!-- Warranty & Compliance -->
+                            <div class="mt-4">
+                                <h6 class="section-title">Warranty & Compliance</h6>
+                                <div id="warrantyInfo">
+                                    <!-- Warranty information will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5 class="section-title">Service Records</h5>
+                            <div id="serviceRecords">
+                                <!-- Service records will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cost Analysis -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5 class="section-title">Cost Analysis</h5>
+                            <div class="row text-center">
+                                <div class="col-md-3">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6>Total Cost</h6>
+                                            <strong id="totalCost">K0.00</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6>Repair Cost</h6>
+                                            <strong id="repairCost">K0.00</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6>Fuel Cost</h6>
+                                            <strong id="fuelCost">K0.00</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6>Maintenance Cost</h6>
+                                            <strong id="maintenanceCost">K0.00</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Image Preview Modal -->
+        <div class="modal fade" id="imagePreviewModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Image Preview</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <img id="previewImage" src="" class="img-fluid" style="max-width: 100%; max-height: 80vh; width: auto; height: auto; object-fit: contain;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <script>
+            const firebaseConfig = {
+                apiKey: "AIzaSyCNWLQd8wiWXhZvUTPgm8DKvmcx90m38s0",
+                authDomain: "wdel-equipment-website-18eb4.firebaseapp.com",
+                projectId: "wdel-equipment-website-18eb4",
+                storageBucket: "wdel-equipment-website-18eb4.firebasestorage.app",
+                messagingSenderId: "401456763929",
+                appId: "1:401456763929:web:424056418e150efccdc688",
+                measurementId: "G-E10JH0ZQ5M"
+            };
+
+        firebase.initializeApp(firebaseConfig);
+        document.body.className = 'app-loaded';
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainApplication').style.display = 'block';
+        initializeApplication();
+
+        function initializeApplication() {
+            // PWA Installation
+            let deferredPrompt;
+            const installButton = document.getElementById('installButton');
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                installButton.style.display = 'block';
+            });
+
+            installButton.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                        installButton.style.display = 'none';
+                    }
+                    deferredPrompt = null;
+                }
+            });
+
+            window.addEventListener('appinstalled', () => {
+                console.log('PWA was installed');
+                installButton.style.display = 'none';
+                deferredPrompt = null;
+            });
+
+            // Detect if the app is running as a PWA
+            function isRunningAsPWA() {
+                return window.matchMedia('(display-mode: standalone)').matches || 
+                       window.navigator.standalone === true;
+            }
+
+            // FIXED: Get local datetime string for form inputs
+            function getLocalDateTimeString() {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                
+                return `${year}-${month}-${day}T${hours}:${minutes}`;
+            }
+
+            const db = firebase.firestore();
+
+            // Enhanced equipment data storage with performance metrics
+            let equipmentDataStorage = [];
+            let serviceHistoryData = {};
+            let locationHistoryData = {};
+            let equipmentNotesData = {};
+            let equipmentMetrics = {};
+            let equipmentImages = {};
+            let equipmentFaults = {};
+            let equipmentMaintenance = {};
+            let currentFilter = 'all';
+            let currentEquipmentId = null;
+
+            // Update Firebase connection status
+            function updateFirebaseStatus(connected) {
+                const statusElement = document.getElementById('firebaseStatus');
+                const statusText = document.getElementById('firebaseStatusText');
+                
+                if (connected) {
+                    statusElement.className = 'firebase-status connected';
+                    statusText.textContent = 'Database Connected';
+                } else {
+                    statusElement.className = 'firebase-status disconnected';
+                    statusText.textContent = 'Database Disconnected';
+                }
+            }
+
+            // NEW: Update quick stats panel
+            function updateQuickStatsPanel() {
+                const totalEquipment = equipmentDataStorage.length;
+                const inService = equipmentDataStorage.filter(e => e.status === 'In Service').length;
+                const outOfService = equipmentDataStorage.filter(e => e.status === 'Out of Service').length;
+                
+                // Calculate equipment health based on faults
+                let healthyCount = 0;
+                let attentionCount = 0;
+                let criticalCount = 0;
+                
+                equipmentDataStorage.forEach(equipment => {
+                    const faults = equipmentFaults[equipment.id] || [];
+                    const unresolvedFaults = faults.filter(f => !f.resolved);
+                    
+                    if (equipment.status === 'In Service' && unresolvedFaults.length === 0) {
+                        healthyCount++;
+                    } else if (unresolvedFaults.length > 0) {
+                        attentionCount++;
+                    } else if (equipment.status === 'Out of Service') {
+                        criticalCount++;
+                    }
+                });
+                
+                document.getElementById('healthyCount').textContent = healthyCount;
+                document.getElementById('attentionCount').textContent = attentionCount;
+                document.getElementById('criticalCount').textContent = criticalCount;
+                
+                // Calculate services today
+                const today = new Date().toDateString();
+                let servicesToday = 0;
+                Object.values(serviceHistoryData).forEach(services => {
+                    services.forEach(service => {
+                        if (new Date(service.date).toDateString() === today) {
+                            servicesToday++;
+                        }
+                    });
+                });
+                document.getElementById('servicesToday').textContent = servicesToday;
+                
+                // Update last updated time
+                document.getElementById('lastUpdatedTime').textContent = 'Just now';
+            }
+
+            // NEW: Quick action handlers
+            function setupQuickActions() {
+                document.getElementById('quickViewOutOfService').addEventListener('click', function() {
+                    setActiveFilter('Out of Service');
+                    document.getElementById('statusFilter').value = 'Out of Service';
+                    filterEquipmentList();
+                });
+
+                document.getElementById('quickViewNeedsService').addEventListener('click', function() {
+                    setActiveFilter('requireService');
+                    filterEquipmentList();
+                });
+
+                document.getElementById('quickViewHighUtilization').addEventListener('click', function() {
+                    // Filter equipment with utilization > 80%
+                    const equipmentItems = document.querySelectorAll('.equipment-item');
+                    equipmentItems.forEach(item => {
+                        const metrics = equipmentMetrics[item.getAttribute('data-id')] || {};
+                        if (metrics.utilization > 80) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+
+                document.getElementById('quickExportData').addEventListener('click', function() {
+                    // Simple data export
+                    const dataStr = JSON.stringify(equipmentDataStorage, null, 2);
+                    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                    const url = URL.createObjectURL(dataBlob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'equipment-data-export.json';
+                    link.click();
+                    URL.revokeObjectURL(url);
+                    alert('Equipment data exported successfully!');
+                });
+            }
+
+            // Firestore real-time listener
+            function setupRealtimeListener() {
+                db.collection('equipmentData').doc('main')
+                    .onSnapshot((doc) => {
+                        if (doc.exists) {
+                            const data = doc.data();
+                            equipmentDataStorage = data.equipment || [];
+                            serviceHistoryData = data.serviceHistory || {};
+                            locationHistoryData = data.locationHistory || {};
+                            equipmentNotesData = data.equipmentNotes || {};
+                            equipmentMetrics = data.equipmentMetrics || {};
+                            equipmentImages = data.equipmentImages || {};
+                            equipmentFaults = data.equipmentFaults || {};
+                            equipmentMaintenance = data.equipmentMaintenance || {};
+                            
+                            updateStats();
+                            calculatePerformanceMetrics();
+                            renderEquipmentList();
+                            populateLocationFilter();
+                            populateProjectFilter();
+                            updateQuickStatsPanel();
+                            
+                            if (currentEquipmentId) {
+                                showEquipmentDetails(currentEquipmentId);
+                            }
+                            
+                            updateFirebaseStatus(true);
+                        }
+                    }, (error) => {
+                        console.error('Firestore error:', error);
+                        updateFirebaseStatus(false);
+                    });
+            }
+
+            // Load all data from Firestore
+            async function loadAllData() {
+                try {
+                    const doc = await db.collection('equipmentData').doc('main').get();
+                    if (doc.exists) {
+                        const data = doc.data();
+                        equipmentDataStorage = data.equipment || [];
+                        serviceHistoryData = data.serviceHistory || {};
+                        locationHistoryData = data.locationHistory || {};
+                        equipmentNotesData = data.equipmentNotes || {};
+                        equipmentMetrics = data.equipmentMetrics || {};
+                        equipmentImages = data.equipmentImages || {};
+                        equipmentFaults = data.equipmentFaults || {};
+                        equipmentMaintenance = data.equipmentMaintenance || {};
+                        updateFirebaseStatus(true);
+                    } else {
+                        equipmentDataStorage = [];
+                    }
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    updateFirebaseStatus(false);
+                }
+            }
+
+            // Calculate performance metrics
+            function calculatePerformanceMetrics() {
+                let totalUtilization = 0;
+                let totalCostPerHour = 0;
+                let activeEquipment = 0;
+
+                equipmentDataStorage.forEach(equipment => {
+                    const metrics = equipmentMetrics[equipment.id] || {};
+                    if (equipment.status === 'In Service') {
+                        totalUtilization += metrics.utilization || 0;
+                        totalCostPerHour += metrics.costPerHour || 0;
+                        activeEquipment++;
+                    }
+                });
+
+                const avgUtilization = activeEquipment > 0 ? (totalUtilization / activeEquipment).toFixed(1) : 0;
+                const avgCostPerHour = activeEquipment > 0 ? (totalCostPerHour / activeEquipment).toFixed(2) : 0;
+
+                document.getElementById('utilizationRate').textContent = avgUtilization + '%';
+                document.getElementById('avgCostPerHour').textContent = 'K' + avgCostPerHour;
+            }
+
+            // Refresh Data function
+            function refreshData() {
+                loadAllData();
+                updateStats();
+                calculatePerformanceMetrics();
+                renderEquipmentList();
+                populateLocationFilter();
+                populateProjectFilter();
+                updateQuickStatsPanel();
+                
+                if (currentEquipmentId) {
+                    showEquipmentDetails(currentEquipmentId);
+                }
+                
+                alert('Data refreshed!');
+            }
+
+            // Set active filter
+            function setActiveFilter(filter) {
+                currentFilter = filter;
+                
+                // Update active card
+                document.querySelectorAll('.stats-card').forEach(card => {
+                    card.classList.remove('active');
+                });
+                
+                if (filter === 'all') {
+                    document.getElementById('totalEquipmentCard').classList.add('active');
+                } else if (filter === 'In Service') {
+                    document.getElementById('inServiceCard').classList.add('active');
+                } else if (filter === 'Out of Service') {
+                    document.getElementById('outOfServiceCard').classList.add('active');
+                } else if (filter === 'requireService') {
+                    document.getElementById('requireServiceCard').classList.add('active');
+                }
+                
+                renderEquipmentList();
+            }
+
+            // Render equipment list
+            function renderEquipmentList() {
+                const equipmentList = document.getElementById('equipmentList');
+                equipmentList.innerHTML = '';
+                
+                // Filter equipment based on current filter
+                let filteredEquipment = equipmentDataStorage;
+                
+                if (currentFilter === 'In Service') {
+                    filteredEquipment = equipmentDataStorage.filter(e => e.status === 'In Service');
+                } else if (currentFilter === 'Out of Service') {
+                    filteredEquipment = equipmentDataStorage.filter(e => e.status === 'Out of Service');
+                } else if (currentFilter === 'requireService') {
+                    filteredEquipment = equipmentDataStorage.filter(e => {
+                        const faults = equipmentFaults[e.id] || [];
+                        return faults.some(f => !f.resolved);
+                    });
+                }
+                
+                if (filteredEquipment.length === 0) {
+                    equipmentList.innerHTML = `
+                        <div class="text-center text-muted p-4">
+                            <i class="fas fa-search fa-2x mb-3"></i>
+                            <p>No equipment found matching current filter</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                filteredEquipment.forEach(equipment => {
+                    const statusClass = getStatusClass(equipment.status);
+                    const metrics = equipmentMetrics[equipment.id] || {};
+                    const faults = equipmentFaults[equipment.id] || [];
+                    const unresolvedFaults = faults.filter(f => !f.resolved);
+                    
+                    const equipmentItem = document.createElement('div');
+                    equipmentItem.className = 'equipment-item';
+                    equipmentItem.setAttribute('data-id', equipment.id);
+                    equipmentItem.setAttribute('data-status', equipment.status);
+                    equipmentItem.setAttribute('data-type', equipment.type);
+                    equipmentItem.setAttribute('data-location', equipment.location);
+                    equipmentItem.setAttribute('data-project', equipment.currentProject || '');
+                    equipmentItem.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">${equipment.make} ${equipment.model}</h6>
+                                <small class="text-muted">${equipment.type} • ${capitalizeFirstLetters(equipment.location)}</small>
+                                ${equipment.currentProject ? `<br><small class="text-info">Project: ${equipment.currentProject}</small>` : ''}
+                            </div>
+                            <span class="status-badge ${statusClass}">${equipment.status}</span>
+                        </div>
+                        ${unresolvedFaults.length > 0 ? `
+                        <div class="mt-2">
+                            <span class="badge bg-danger metrics-badge">${unresolvedFaults.length} unresolved issue${unresolvedFaults.length > 1 ? 's' : ''}</span>
+                        </div>
+                        ` : ''}
+                        ${metrics.engineHours ? `
+                        <div class="mt-2">
+                            <span class="badge bg-secondary metrics-badge">${metrics.engineHours} hrs</span>
+                            ${metrics.utilization ? `<span class="badge bg-info metrics-badge">${metrics.utilization}% util</span>` : ''}
+                            ${metrics.costPerHour ? `<span class="badge bg-warning metrics-badge">K${metrics.costPerHour}/hr</span>` : ''}
+                        </div>
+                        ` : ''}
+                    `;
+                    
+                    equipmentList.appendChild(equipmentItem);
+                });
+            }
+
+            // Show equipment details
+            function showEquipmentDetails(equipmentId) {
+                const equipment = equipmentDataStorage.find(e => e.id == equipmentId);
+                const detailsContainer = document.getElementById('equipmentDetails');
+                
+                if (!equipment) return;
+                
+                const statusClass = getStatusClass(equipment.status);
+                const metrics = equipmentMetrics[equipment.id] || {};
+                
+                // Get last service date
+                const lastService = getLastServiceDate(equipmentId);
+                
+                detailsContainer.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4>${equipment.make} ${equipment.model}</h4>
+                            <p class="text-muted">${equipment.type} • ${capitalizeFirstLetters(equipment.location)}</p>
+                            ${equipment.currentProject ? `<p class="text-info"><i class="fas fa-hard-hat"></i> ${equipment.currentProject}</p>` : ''}
+                            
+                            <div class="mb-3">
+                                <span class="status-badge ${statusClass}">${equipment.status}</span>
+                            </div>
+                            
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td style="width: 30%;"><strong>Owner:</strong></td>
+                                    <td>${equipment.owner}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Serial Number:</strong></td>
+                                    <td>${equipment.serial}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>PIN:</strong></td>
+                                    <td>${equipment.pin}</td>
+                                </tr>
+                            </table>
+                            
+                            ${metrics.engineHours ? `
+                            <div class="performance-chart">
+                                <h6>Performance Metrics</h6>
+                                <div class="row text-center">
+                                    <div class="col-3">
+                                        <strong>${metrics.engineHours}</strong>
+                                        <div class="small text-muted">Engine Hours</div>
+                                    </div>
+                                    <div class="col-3">
+                                        <strong>${metrics.utilization || 0}%</strong>
+                                        <div class="small text-muted">Utilization</div>
+                                    </div>
+                                    <div class="col-3">
+                                        <strong>K${metrics.costPerHour || 0}</strong>
+                                        <div class="small text-muted">Cost/Hour</div>
+                                    </div>
+                                    <div class="col-3">
+                                        <strong>${metrics.mtbf || 0}</strong>
+                                        <div class="small text-muted">MTBF</div>
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
+                            
+                            <h6 class="section-title">Faults & Issues</h6>
+                            <div id="quickFaultsList">
+                                ${renderFaultsList(equipmentId)}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6>Service Information</h6>
+                                    <div class="mb-3">
+                                        <div><strong>Last Service:</strong></div>
+                                        <div>${lastService || 'No service recorded'}</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div><strong>Next Service:</strong></div>
+                                        <div>${getNextServiceDate(equipmentId) || 'Not scheduled'}</div>
+                                    </div>
+                                    <button class="btn btn-primary btn-sm w-100 view-details-btn" data-id="${equipment.id}">
+                                        View Full Details & Service History
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Render enhanced faults list
+            function renderFaultsList(equipmentId) {
+                const faults = equipmentFaults[equipmentId] || [];
+                
+                if (faults.length === 0) {
+                    return '<div class="alert alert-success">No faults reported. Equipment is in good condition.</div>';
+                }
+                
+                let html = '';
+                faults.forEach(fault => {
+                    html += `
+                        <div class="fault-list-item ${fault.resolved ? 'resolved' : ''}">
+                            <input type="checkbox" class="fault-checkbox" ${fault.resolved ? 'checked' : ''} disabled>
+                            <p class="fault-text">${fault.text}</p>
+                            ${fault.resolvedTimestamp ? `<small class="fault-timestamp">${fault.resolvedTimestamp}</small>` : ''}
+                        </div>
+                    `;
+                });
+                
+                return html;
+            }
+
+            // Show equipment detail page
+            function showEquipmentDetailPage(equipmentId) {
+                const equipment = equipmentDataStorage.find(e => e.id == equipmentId);
+                
+                if (!equipment) return;
+                
+                currentEquipmentId = equipmentId;
+                const metrics = equipmentMetrics[equipment.id] || {};
+                
+                document.getElementById('dashboard').style.display = 'none';
+                document.getElementById('equipmentDetailPage').style.display = 'block';
+                
+                document.getElementById('detailEquipmentName').textContent = `${equipment.make} ${equipment.model}`;
+                document.getElementById('detailOwner').textContent = equipment.owner;
+                document.getElementById('detailType').textContent = equipment.type;
+                document.getElementById('detailMakeModel').textContent = `${equipment.make} ${equipment.model}`;
+                document.getElementById('detailSerial').textContent = equipment.serial;
+                document.getElementById('detailPIN').textContent = equipment.pin;
+                document.getElementById('detailLocation').textContent = capitalizeFirstLetters(equipment.location);
+                document.getElementById('detailProject').textContent = equipment.currentProject || 'Not assigned';
+                document.getElementById('detailOperator').textContent = equipment.assignedOperator || 'Not assigned';
+                
+                const statusClass = getStatusClass(equipment.status);
+                document.getElementById('detailStatus').innerHTML = `<span class="status-badge ${statusClass}">${equipment.status}</span>`;
+                
+                // Update performance metrics
+                document.getElementById('detailEngineHours').textContent = metrics.engineHours || 0;
+                document.getElementById('detailFuelConsumption').textContent = metrics.fuelConsumption || 0;
+                document.getElementById('detailUtilization').textContent = (metrics.utilization || 0) + '%';
+                document.getElementById('detailCostPerHour').textContent = 'K' + (metrics.costPerHour || 0).toFixed(2);
+                document.getElementById('detailMTBF').textContent = metrics.mtbf || 0;
+                document.getElementById('detailDowntime').textContent = (metrics.downtime || 0) + '%';
+                
+                // Update cost analysis
+                document.getElementById('totalCost').textContent = 'K' + (metrics.totalCost || 0).toFixed(2);
+                document.getElementById('repairCost').textContent = 'K' + (metrics.repairCost || 0).toFixed(2);
+                document.getElementById('fuelCost').textContent = 'K' + (metrics.fuelCost || 0).toFixed(2);
+                document.getElementById('maintenanceCost').textContent = 'K' + (metrics.maintenanceCost || 0).toFixed(2);
+                
+                // Update service dates
+                document.getElementById('detailLastService').textContent = getLastServiceDate(equipmentId) || 'No service recorded';
+                document.getElementById('detailNextService').textContent = getNextServiceDate(equipmentId) || 'Not scheduled';
+                
+                // Render cover photo
+                renderCoverPhoto(equipmentId);
+                
+                // Render enhanced faults list
+                renderEnhancedFaultsList(equipmentId);
+                
+                // Render equipment albums
+                renderEquipmentAlbums(equipmentId);
+                
+                // Render service history
+                renderServiceHistory(equipmentId);
+                
+                // Render location history
+                renderLocationHistory(equipmentId);
+                
+                // Render equipment notes
+                renderEquipmentNotes(equipmentId);
+                
+                // Render maintenance schedule
+                renderMaintenanceSchedule(equipmentId);
+                
+                // Render warranty information
+                renderWarrantyInfo(equipment);
+                
+                // Render service records
+                renderServiceRecords(equipmentId);
+            }
+
+            // Render enhanced faults list in detail page
+            function renderEnhancedFaultsList(equipmentId) {
+                const faultsContainer = document.getElementById('faultsList');
+                const faults = equipmentFaults[equipmentId] || [];
+                
+                if (faults.length === 0) {
+                    faultsContainer.innerHTML = '<div class="alert alert-success">No faults reported. Equipment is in good condition.</div>';
+                    return;
+                }
+                
+                let html = '';
+                faults.forEach(fault => {
+                    html += `
+                        <div class="fault-list-item ${fault.resolved ? 'resolved' : ''}">
+                            <input type="checkbox" class="fault-checkbox" ${fault.resolved ? 'checked' : ''} disabled>
+                            <p class="fault-text">${fault.text}</p>
+                            ${fault.resolvedTimestamp ? `<small class="fault-timestamp">${fault.resolvedTimestamp}</small>` : ''}
+                        </div>
+                    `;
+                });
+                
+                faultsContainer.innerHTML = html;
+            }
+
+            // Render cover photo
+            function renderCoverPhoto(equipmentId) {
+                const imageContainer = document.getElementById('equipmentImageContainer');
+                const images = equipmentImages[equipmentId] || {};
+                
+                if (images.coverPhoto) {
+                    imageContainer.innerHTML = `
+                        <img src="${images.coverPhoto}" class="equipment-image" onclick="previewImage('${images.coverPhoto}')">
+                    `;
+                } else {
+                    imageContainer.innerHTML = `
+                        <div class="image-placeholder">
+                            <i class="fas fa-camera fa-2x"></i>
+                            <div>No Cover Photo</div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Render equipment albums
+            function renderEquipmentAlbums(equipmentId) {
+                const albumsContainer = document.getElementById('equipmentAlbums');
+                const images = equipmentImages[equipmentId] || { albums: [] };
+                
+                if (images.albums.length === 0) {
+                    albumsContainer.innerHTML = '<p class="text-muted">No image albums available.</p>';
+                    return;
+                }
+                
+                let html = '';
+                images.albums.forEach(album => {
+                    html += `
+                        <div class="album-item">
+                            <div class="album-title">${album.title}</div>
+                            <div class="album-date">${new Date(album.timestamp).toLocaleString()}</div>
+                            <div class="album-images">
+                    `;
+                    
+                    album.images.forEach(image => {
+                        html += `<img src="${image.url}" class="album-image" onclick="previewImage('${image.url}')">`;
+                    });
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                albumsContainer.innerHTML = html;
+            }
+
+            // Render service history
+            function renderServiceHistory(equipmentId) {
+                const serviceHistory = document.getElementById('serviceHistory');
+                serviceHistory.innerHTML = '';
+                
+                const history = serviceHistoryData[equipmentId] || [];
+                
+                if (history.length === 0) {
+                    serviceHistory.innerHTML = '<p class="text-muted">No service history recorded.</p>';
+                    return;
+                }
+                
+                // Sort by date (newest first)
+                history.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                history.forEach((service, index) => {
+                    const serviceItem = document.createElement('div');
+                    serviceItem.className = 'service-history-item';
+                    
+                    const serviceTypeClass = getServiceTypeClass(service.type);
+                    const serviceTypeText = getServiceTypeText(service.type);
+                    
+                    serviceItem.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <span class="service-badge ${serviceTypeClass}">${serviceTypeText}</span>
+                            </div>
+                            <small class="text-muted">${formatDateTime(new Date(service.date))}</small>
+                        </div>
+                        <p class="mb-1">${service.description || 'No description provided'}</p>
+                        ${service.mechanics ? `<p class="mb-1"><strong>Mechanics:</strong> ${service.mechanics}</p>` : ''}
+                        ${service.cost ? `<p class="mb-1"><strong>Cost:</strong> K${parseFloat(service.cost).toFixed(2)}</p>` : ''}
+                    `;
+                    
+                    serviceHistory.appendChild(serviceItem);
+                });
+            }
+
+            // Render maintenance schedule
+            function renderMaintenanceSchedule(equipmentId) {
+                const maintenanceSchedule = document.getElementById('maintenanceSchedule');
+                maintenanceSchedule.innerHTML = '';
+                
+                const equipment = equipmentDataStorage.find(e => e.id == equipmentId);
+                const metrics = equipmentMetrics[equipmentId] || {};
+                const maintenance = equipmentMaintenance[equipmentId] || {};
+                
+                if (!equipment) return;
+                
+                const engineHours = metrics.engineHours || 0;
+                
+                // Calculate maintenance due
+                const engineOilDue = 500 - (engineHours % 500);
+                const hydraulicBreatherDue = 1000 - (engineHours % 1000);
+                const fuelFilterDue = 1000 - (engineHours % 1000);
+                const hydraulicFilterDue = 2500 - (engineHours % 2500);
+                
+                let html = `
+                    <div class="list-group">
+                        <div class="maintenance-item ${engineOilDue < 0 ? 'overdue' : ''}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Engine Oil Change</strong>
+                                    <small class="text-muted d-block">Every 500 hours</small>
+                                </div>
+                                <div>
+                                    <span class="maintenance-due-input ${engineOilDue < 0 ? 'negative' : ''}">
+                                        ${engineOilDue < 0 ? `-${Math.abs(engineOilDue)}` : engineOilDue} hrs
+                                    </span>
+                                    <span class="maintenance-status badge ${engineOilDue < 0 ? 'bg-danger' : 'bg-success'}">
+                                        ${engineOilDue < 0 ? 'OVERDUE' : 'Due'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="maintenance-item ${hydraulicBreatherDue < 0 ? 'overdue' : ''}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Hydraulic Oil Tank Breather</strong>
+                                    <small class="text-muted d-block">Every 1000 hours</small>
+                                </div>
+                                <div>
+                                    <span class="maintenance-due-input ${hydraulicBreatherDue < 0 ? 'negative' : ''}">
+                                        ${hydraulicBreatherDue < 0 ? `-${Math.abs(hydraulicBreatherDue)}` : hydraulicBreatherDue} hrs
+                                    </span>
+                                    <span class="maintenance-status badge ${hydraulicBreatherDue < 0 ? 'bg-danger' : 'bg-success'}">
+                                        ${hydraulicBreatherDue < 0 ? 'OVERDUE' : 'Due'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="maintenance-item ${fuelFilterDue < 0 ? 'overdue' : ''}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Fuel Main Filter</strong>
+                                    <small class="text-muted d-block">Every 1000 hours</small>
+                                </div>
+                                <div>
+                                    <span class="maintenance-due-input ${fuelFilterDue < 0 ? 'negative' : ''}">
+                                        ${fuelFilterDue < 0 ? `-${Math.abs(fuelFilterDue)}` : fuelFilterDue} hrs
+                                    </span>
+                                    <span class="maintenance-status badge ${fuelFilterDue < 0 ? 'bg-danger' : 'bg-success'}">
+                                        ${fuelFilterDue < 0 ? 'OVERDUE' : 'Due'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="maintenance-item ${hydraulicFilterDue < 0 ? 'overdue' : ''}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Hydraulic Oil Filter</strong>
+                                    <small class="text-muted d-block">Every 2500 hours</small>
+                                </div>
+                                <div>
+                                    <span class="maintenance-due-input ${hydraulicFilterDue < 0 ? 'negative' : ''}">
+                                        ${hydraulicFilterDue < 0 ? `-${Math.abs(hydraulicFilterDue)}` : hydraulicFilterDue} hrs
+                                    </span>
+                                    <span class="maintenance-status badge ${hydraulicFilterDue < 0 ? 'bg-danger' : 'bg-success'}">
+                                        ${hydraulicFilterDue < 0 ? 'OVERDUE' : 'Due'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                maintenanceSchedule.innerHTML = html;
+            }
+
+            // Render warranty info
+            function renderWarrantyInfo(equipment) {
+                const warrantyInfo = document.getElementById('warrantyInfo');
+                
+                const warrantyData = equipment.warranty || {
+                    expiration: '2025-12-31',
+                    type: 'Standard',
+                    provider: 'Manufacturer'
+                };
+                
+                const today = new Date();
+                const expiration = new Date(warrantyData.expiration);
+                const daysRemaining = Math.ceil((expiration - today) / (1000 * 60 * 60 * 24));
+                
+                const statusClass = daysRemaining > 90 ? 'bg-success' : daysRemaining > 30 ? 'bg-warning' : 'bg-danger';
+                
+                let html = `
+                    <div class="list-group">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Warranty Status</span>
+                            <span class="badge ${statusClass}">${daysRemaining > 0 ? daysRemaining + ' days left' : 'Expired'}</span>
+                        </div>
+                        <div class="list-group-item">
+                            <strong>Type:</strong> ${warrantyData.type}
+                        </div>
+                        <div class="list-group-item">
+                            <strong>Provider:</strong> ${warrantyData.provider}
+                        </div>
+                        <div class="list-group-item">
+                            <strong>Expiration:</strong> ${formatDate(expiration)}
+                        </div>
+                    </div>
+                `;
+                
+                warrantyInfo.innerHTML = html;
+            }
+
+            // Render equipment notes
+            function renderEquipmentNotes(equipmentId) {
+                const notesContainer = document.getElementById('equipmentNotes');
+                const notes = equipmentNotesData[equipmentId] || [];
+                
+                if (notes.length === 0) {
+                    notesContainer.innerHTML = '<p class="text-muted">No notes recorded.</p>';
+                    return;
+                }
+                
+                // Sort by date (newest first)
+                notes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                let html = '';
+                notes.forEach(note => {
+                    html += `
+                        <div class="note-item">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">${formatDateTime(new Date(note.timestamp))}</small>
+                            </div>
+                            <p class="mb-0">${note.content}</p>
+                        </div>
+                    `;
+                });
+                
+                notesContainer.innerHTML = html;
+            }
+
+            // Render service records
+            function renderServiceRecords(equipmentId) {
+                const serviceRecords = document.getElementById('serviceRecords');
+                serviceRecords.innerHTML = '';
+                
+                const serviceHistory = serviceHistoryData[equipmentId] || [];
+                
+                if (serviceHistory.length === 0) {
+                    serviceRecords.innerHTML = '<p class="text-muted">No service records available.</p>';
+                    return;
+                }
+                
+                // Sort by date (newest first)
+                serviceHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                let html = '';
+                serviceHistory.forEach(service => {
+                    const serviceTypeClass = getServiceTypeClass(service.type);
+                    const serviceTypeText = getServiceTypeText(service.type);
+                    
+                    html += `
+                        <div class="service-history-item">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <span class="service-badge ${serviceTypeClass}">${serviceTypeText}</span>
+                                </div>
+                                <small class="text-muted">${formatDateTime(new Date(service.date))}</small>
+                            </div>
+                            <p class="mb-1">${service.description || 'No description provided'}</p>
+                            ${service.mechanics ? `<p class="mb-1"><strong>Mechanics:</strong> ${service.mechanics}</p>` : ''}
+                            ${service.cost ? `<p class="mb-1"><strong>Cost:</strong> K${parseFloat(service.cost).toFixed(2)}</p>` : ''}
+                        </div>
+                    `;
+                });
+                
+                serviceRecords.innerHTML = html;
+            }
+
+            // Render location history
+            function renderLocationHistory(equipmentId) {
+                const locationHistory = document.getElementById('locationHistory');
+                locationHistory.innerHTML = '';
+                
+                const history = locationHistoryData[equipmentId] || [];
+                
+                if (history.length === 0) {
+                    locationHistory.innerHTML = '<p class="text-muted">No location history recorded.</p>';
+                    return;
+                }
+                
+                // Sort by date (newest first)
+                history.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                // Show location history
+                history.forEach(location => {
+                    const locationItem = document.createElement('div');
+                    locationItem.className = 'location-history-item';
+                    
+                    locationItem.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div>
+                                <strong>${capitalizeFirstLetters(location.toLocation)}</strong>
+                            </div>
+                            <small class="text-muted">${formatDateTime(new Date(location.date))}</small>
+                        </div>
+                        <p class="mb-0 small">${location.reason || 'No reason provided'}</p>
+                        ${location.fromLocation ? `<small class="text-muted">Previous location: ${capitalizeFirstLetters(location.fromLocation)}</small>` : ''}
+                    `;
+                    
+                    locationHistory.appendChild(locationItem);
+                });
+            }
+
+            // Preview image
+            function previewImage(imageSrc) {
+                document.getElementById('previewImage').src = imageSrc;
+                const modal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+                modal.show();
+            }
+
+            // Update stats
+            function updateStats() {
+                const total = equipmentDataStorage.length;
+                const inService = equipmentDataStorage.filter(e => e.status === 'In Service').length;
+                const outOfService = equipmentDataStorage.filter(e => e.status === 'Out of Service').length;
+                const requireService = equipmentDataStorage.filter(e => {
+                    const faults = equipmentFaults[e.id] || [];
+                    return faults.some(f => !f.resolved);
+                }).length;
+                
+                document.getElementById('totalEquipment').textContent = total;
+                document.getElementById('inServiceEquipment').textContent = inService;
+                document.getElementById('outOfServiceEquipment').textContent = outOfService;
+                document.getElementById('requireServiceEquipment').textContent = requireService;
+            }
+
+            // Get status class
+            function getStatusClass(status) {
+                switch(status) {
+                    case 'In Service': return 'status-in-service';
+                    case 'Out of Service': return 'status-out-of-service';
+                    default: return 'status-unknown';
+                }
+            }
+
+            // Capitalize first letters
+            function capitalizeFirstLetters(str) {
+                if (!str) return '';
+                return str.replace(/\w\S*/g, function(txt) {
+                    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+                });
+            }
+
+            // Format date
+            function formatDate(date) {
+                return date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+            }
+
+            // Format date time
+            function formatDateTime(date) {
+                return date.toLocaleString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            // Get last service date
+            function getLastServiceDate(equipmentId) {
+                const history = serviceHistoryData[equipmentId];
+                if (!history || history.length === 0) return null;
+                
+                const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
+                return formatDateTime(new Date(sortedHistory[0].date));
+            }
+
+            // Get next service date
+            function getNextServiceDate(equipmentId) {
+                const equipment = equipmentDataStorage.find(e => e.id == equipmentId);
+                if (!equipment || !equipment.nextServiceDate) return null;
+                
+                return formatDate(new Date(equipment.nextServiceDate));
+            }
+
+            // Get service type class
+            function getServiceTypeClass(type) {
+                switch(type) {
+                    case 'oil': return 'service-oil';
+                    case 'greasing': return 'service-greasing';
+                    case 'full': return 'service-full';
+                    case 'inspection': return 'service-inspection';
+                    case 'repair': return 'service-repair';
+                    default: return 'service-oil';
+                }
+            }
+
+            // Get service type text
+            function getServiceTypeText(type) {
+                switch(type) {
+                    case 'oil': return 'Oil Change';
+                    case 'greasing': return 'Greasing';
+                    case 'full': return 'Full Service';
+                    case 'inspection': return 'Inspection';
+                    case 'repair': return 'Repair';
+                    default: return 'Service';
+                }
+            }
+
+            // Populate location filter
+            function populateLocationFilter() {
+                const locationFilter = document.getElementById('locationFilter');
+                while (locationFilter.children.length > 1) {
+                    locationFilter.removeChild(locationFilter.lastChild);
+                }
+                
+                const locations = [...new Set(equipmentDataStorage.map(e => e.location))];
+                
+                locations.forEach(location => {
+                    const option = document.createElement('option');
+                    option.value = location;
+                    option.textContent = capitalizeFirstLetters(location);
+                    locationFilter.appendChild(option);
+                });
+            }
+
+            // Populate project filter
+            function populateProjectFilter() {
+                const projectFilter = document.getElementById('projectFilter');
+                while (projectFilter.children.length > 1) {
+                    projectFilter.removeChild(projectFilter.lastChild);
+                }
+                
+                const projects = [...new Set(equipmentDataStorage.map(e => e.currentProject).filter(p => p))];
+                
+                projects.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project;
+                    option.textContent = project;
+                    projectFilter.appendChild(option);
+                });
+            }
+
+            // Filter equipment list
+            function filterEquipmentList() {
+                const statusFilter = document.getElementById('statusFilter').value;
+                const typeFilter = document.getElementById('typeFilter').value;
+                const locationFilter = document.getElementById('locationFilter').value;
+                const projectFilter = document.getElementById('projectFilter').value;
+                const searchTerm = document.getElementById('equipmentSearch').value.toLowerCase();
+                
+                const equipmentItems = document.querySelectorAll('.equipment-item');
+                
+                equipmentItems.forEach(item => {
+                    const id = item.getAttribute('data-id');
+                    const status = item.getAttribute('data-status');
+                    const type = item.getAttribute('data-type');
+                    const location = item.getAttribute('data-location');
+                    const project = item.getAttribute('data-project');
+                    const text = item.textContent.toLowerCase();
+                    
+                    const statusMatch = statusFilter === 'all' || status === statusFilter;
+                    const typeMatch = typeFilter === 'all' || type === typeFilter;
+                    const locationMatch = locationFilter === 'all' || location === locationFilter;
+                    const projectMatch = projectFilter === 'all' || project === projectFilter;
+                    const searchMatch = text.includes(searchTerm);
+                    
+                    if (statusMatch && typeMatch && locationMatch && projectMatch && searchMatch) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+
+            // Show dashboard
+            function showDashboard() {
+                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('equipmentDetailPage').style.display = 'none';
+                currentEquipmentId = null;
+            }
+
+            // Make functions globally accessible
+            window.showEquipmentDetailPage = showEquipmentDetailPage;
+            window.showEquipmentDetails = showEquipmentDetails;
+            window.previewImage = previewImage;
+
+            // Initialize the application after login
+            function initAppAfterLogin() {
+                // Event listeners
+                document.getElementById('backToDashboard').addEventListener('click', showDashboard);
+                document.getElementById('refreshBtn').addEventListener('click', refreshData);
+                document.getElementById('statusFilter').addEventListener('change', filterEquipmentList);
+                document.getElementById('typeFilter').addEventListener('change', filterEquipmentList);
+                document.getElementById('locationFilter').addEventListener('change', filterEquipmentList);
+                document.getElementById('projectFilter').addEventListener('change', filterEquipmentList);
+                document.getElementById('equipmentSearch').addEventListener('input', filterEquipmentList);
+                
+                // Stats card filtering
+                document.getElementById('totalEquipmentCard').addEventListener('click', function() {
+                    setActiveFilter('all');
+                });
+                document.getElementById('inServiceCard').addEventListener('click', function() {
+                    setActiveFilter('In Service');
+                });
+                document.getElementById('outOfServiceCard').addEventListener('click', function() {
+                    setActiveFilter('Out of Service');
+                });
+                document.getElementById('requireServiceCard').addEventListener('click', function() {
+                    setActiveFilter('requireService');
+                });
+                
+                // NEW: Setup quick actions
+                setupQuickActions();
+                
+                // Event delegation for equipment items and detail buttons
+                document.addEventListener('click', function(e) {
+                    // Handle equipment item clicks
+                    if (e.target.closest('.equipment-item')) {
+                        const equipmentItem = e.target.closest('.equipment-item');
+                        const equipmentId = equipmentItem.getAttribute('data-id');
+                        
+                        document.querySelectorAll('.equipment-item').forEach(item => {
+                            item.classList.remove('selected');
+                        });
+                        equipmentItem.classList.add('selected');
+                        showEquipmentDetails(parseInt(equipmentId));
+                    }
+                    
+                    // Handle "View Full Details" button clicks
+                    if (e.target.closest('.view-details-btn')) {
+                        const button = e.target.closest('.view-details-btn');
+                        const equipmentId = button.getAttribute('data-id');
+                        showEquipmentDetailPage(parseInt(equipmentId));
+                    }
+                });
+                
+                // Load data and setup real-time listener
+                loadAllData();
+                setupRealtimeListener();
+                
+                // Check if equipment ID is provided in URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const equipmentId = urlParams.get('equipment');
+                if (equipmentId) {
+                    showEquipmentDetailPage(parseInt(equipmentId));
+                }
+
+                // Check if running as PWA
+                if (isRunningAsPWA()) {
+                    console.log('Running as installed PWA');
+                }
+            }
+
+            // Call the initialization
+            initAppAfterLogin();
+        }
+    </script>
+<script>
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+    .then(reg => console.log('SW registered'))
+    .catch(err => console.log('SW registration failed'));
+}
+</script>
+</body>
+</html>
