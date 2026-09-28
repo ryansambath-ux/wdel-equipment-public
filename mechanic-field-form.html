@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WDEL - Field Equipment Inspection</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a5276, #3498db);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .mechanic-form {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .form-section {
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+            margin-bottom: 25px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .fault-item {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 3px solid #e74c3c;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .fault-item.resolved {
+            border-left-color: #27ae60;
+            background: #d5f4e6;
+        }
+        .photo-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            margin: 5px;
+            border-radius: 5px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+        }
+        .photo-preview:hover {
+            border-color: #3498db;
+        }
+        .equipment-info {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 2px solid #3498db;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .console-log {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="mechanic-form mb-3" id="fieldLoginPanel">
+        <strong>Wabag District Enterprise Limited</strong>
+        <p class="mb-2">Sign in to submit an equipment inspection.</p>
+        <form id="fieldLoginForm" class="row g-2">
+            <div class="col-md-5"><input type="email" class="form-control" id="fieldEmail" value="enterprisewabag@gmail.com" required></div>
+            <div class="col-md-5"><input type="password" class="form-control" id="fieldPassword" placeholder="Password" required></div>
+            <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Sign in</button></div>
+        </form>
+        <small id="fieldLoginError" class="text-danger" style="display:none">Sign in failed. Check the email and password.</small>
+    </div>
+    <div class="header">
+        <h1><i class="fas fa-tools me-2"></i>WDEL Equipment Inspection</h1>
+        <p class="lead">Field Mechanic Form - Submit Inspection Reports</p>
+    </div>
+
+    <div class="mechanic-form">
+        <!-- Mechanic Login -->
+        <div id="mechanicLogin" class="form-section">
+            <h4><i class="fas fa-user-cog me-2"></i>Mechanic Identification</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="form-label">Your Full Name *</label>
+                    <input type="text" class="form-control" id="mechanicName" placeholder="e.g., John Doe" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Inspection Date *</label>
+                    <input type="date" class="form-control" id="inspectionDate" required>
+                </div>
+            </div>
+            <button class="btn btn-primary mt-3" onclick="startInspection()">
+                <i class="fas fa-play me-2"></i>Start New Inspection
+            </button>
+        </div>
+
+        <!-- Debug Console (hidden by default) -->
+        <div id="debugConsole" class="console-log mt-3"></div>
+
+        <!-- Inspection Form -->
+        <div id="inspectionForm" style="display: none;">
+            <div class="form-section">
+                <h5><i class="fas fa-tractor me-2"></i>1. Select Equipment</h5>
+                <select id="equipmentSelect" class="form-select" onchange="loadEquipmentInfo()">
+                    <option value="">-- Choose Equipment --</option>
+                </select>
+                
+                <div id="equipmentInfo" class="equipment-info mt-3" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <strong id="equipmentDisplay"></strong><br>
+                            <small>Serial: <span id="serialDisplay"></span></small><br>
+                            <small>Current Location: <span id="locationDisplay"></span></small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="badge" id="currentStatusDisplay">Status Unknown</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h5><i class="fas fa-info-circle me-2"></i>2. Current Status</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">Equipment Status</label>
+                        <select class="form-select" id="fieldStatus">
+                            <option value="In Service">✅ In Service - Operating Normally</option>
+                            <option value="Out of Service">❌ Out of Service - Not Operating</option>
+                            <option value="Requires Service">⚠️ Requires Service - Needs Attention</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Current Engine Hours</label>
+                        <input type="number" class="form-control" id="engineHours" step="0.1" min="0" placeholder="e.g., 1250.5">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h5><i class="fas fa-exclamation-triangle me-2"></i>3. Faults & Issues Found</h5>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="faultInput" placeholder="Describe the fault or issue...">
+                    <button class="btn btn-outline-primary" type="button" onclick="addFault()">
+                        <i class="fas fa-plus"></i> Add Fault
+                    </button>
+                </div>
+                <div id="faultsList" class="mt-3">
+                    <div class="text-muted text-center p-3">No faults added yet</div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h5><i class="fas fa-wrench me-2"></i>4. Maintenance Performed</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="oilChange">
+                            <label class="form-check-label">🛢️ Engine Oil Changed</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="fuelFilter">
+                            <label class="form-check-label">⛽ Fuel Filter Replaced</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="hydraulicFilter">
+                            <label class="form-check-label">💧 Hydraulic Filter Replaced</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="otherMaintenance">
+                            <label class="form-check-label">🔧 Other Maintenance</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <label class="form-label">Work Performed Details</label>
+                    <textarea class="form-control" id="maintenanceNotes" rows="2" placeholder="Describe what work was done, parts replaced, etc..."></textarea>
+                </div>
+            </div>
+
+            <div class="form-section" style="display:none">
+                <h5><i class="fas fa-camera me-2"></i>5. Equipment Photos</h5>
+                <input type="file" class="form-control" id="equipmentPhotos" multiple accept="image/*" onchange="previewPhotos()">
+                <small class="text-muted">Take photos of issues, repairs, or general condition (max 10 photos)</small>
+                <div id="photoPreview" class="row mt-3 g-2"></div>
+            </div>
+
+            <div class="alert alert-info">Photo uploads are unavailable on the free plan. Inspection details and notes still save.</div>
+
+            <div class="form-section">
+                <h5><i class="fas fa-sticky-note me-2"></i>6. Additional Notes</h5>
+                <textarea class="form-control" id="inspectionNotes" rows="3" placeholder="Observations, recommendations for repairs, parts needed..."></textarea>
+            </div>
+
+            <div class="text-center mt-4">
+                <button class="btn btn-success btn-lg px-5" onclick="submitForm()" id="submitBtn" disabled>
+                    <i class="fas fa-paper-plane me-2"></i>Submit Inspection
+                </button>
+                <button class="btn btn-secondary btn-lg px-5 ms-2" onclick="clearForm()">
+                    <i class="fas fa-redo me-2"></i>Start Over
+                </button>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div id="successMessage" class="alert alert-success text-center" style="display: none;">
+            <h4><i class="fas fa-check-circle me-2"></i>Inspection Submitted Successfully!</h4>
+            <p>Your inspection report has been saved to the system and is now visible to admins.</p>
+            <button class="btn btn-primary mt-3" onclick="clearForm()">
+                <i class="fas fa-plus me-2"></i>Submit Another Inspection
+            </button>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="alert alert-danger text-center" style="display: none;">
+            <h4><i class="fas fa-exclamation-circle me-2"></i>Submission Failed</h4>
+            <p id="errorText"></p>
+            <button class="btn btn-danger mt-3" onclick="location.reload()">
+                <i class="fas fa-sync me-2"></i>Reload Page
+            </button>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCNWLQd8wiWXhZvUTPgm8DKvmcx90m38s0",
+            authDomain: "wdel-equipment-website-18eb4.firebaseapp.com",
+            projectId: "wdel-equipment-website-18eb4",
+            storageBucket: "wdel-equipment-website-18eb4.firebasestorage.app",
+            messagingSenderId: "401456763929",
+            appId: "1:401456763929:web:424056418e150efccdc688",
+            measurementId: "G-E10JH0ZQ5M"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        const allowedFieldUsers = ['ryansambath@gmail.com', 'enterprisewabag@gmail.com'];
+        firebase.auth().onAuthStateChanged(user => {
+            const allowed = Boolean(user && user.email && allowedFieldUsers.includes(user.email.toLowerCase()));
+            document.getElementById('fieldLoginPanel').style.display = allowed ? 'none' : 'block';
+            document.getElementById('submitBtn').disabled = !allowed;
+            if (user && !allowed) firebase.auth().signOut();
+        });
+        document.getElementById('fieldLoginForm').addEventListener('submit', async event => {
+            event.preventDefault();
+            const email = document.getElementById('fieldEmail').value.trim().toLowerCase();
+            if (!allowedFieldUsers.includes(email)) {
+                document.getElementById('fieldLoginError').style.display = 'block';
+                return;
+            }
+            try {
+                await firebase.auth().signInWithEmailAndPassword(email, document.getElementById('fieldPassword').value);
+                document.getElementById('fieldPassword').value = '';
+                document.getElementById('fieldLoginError').style.display = 'none';
+            } catch (error) {
+                console.error('Field sign in failed:', error.code);
+                document.getElementById('fieldLoginError').style.display = 'block';
+            }
+        });
+
+        let equipmentList = [];
+        let debugMode = true; // Set to false to hide debug logs
+
+        // Debug logging function
+        function log(message, data = null) {
+            if (!debugMode) return;
+            
+            const debugConsole = document.getElementById('debugConsole');
+            debugConsole.style.display = 'block';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            let logMessage = `[${timestamp}] ${message}`;
+            if (data) {
+                logMessage += `\n${JSON.stringify(data, null, 2)}`;
+            }
+            
+            debugConsole.innerHTML += `<div>${logMessage}</div>`;
+            debugConsole.scrollTop = debugConsole.scrollHeight;
+            console.log(message, data);
+        }
+
+        // Set today's date as default
+        document.getElementById('inspectionDate').value = new Date().toISOString().split('T')[0];
+
+        // Load equipment list from Firebase
+        async function loadEquipmentList() {
+            try {
+                log('Loading equipment list...');
+                const doc = await db.collection('equipmentData').doc('main').get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    equipmentList = data.equipment || [];
+                    log(`Loaded ${equipmentList.length} equipment items`);
+                    
+                    const select = document.getElementById('equipmentSelect');
+                    select.innerHTML = '<option value="">-- Choose Equipment --</option>';
+                    
+                    equipmentList.sort((a, b) => a.make.localeCompare(b.make)).forEach(eq => {
+                        const option = document.createElement('option');
+                        option.value = eq.id;
+                        option.textContent = `${eq.make} ${eq.model} - ${eq.serial} (${eq.location})`;
+                        select.appendChild(option);
+                    });
+                } else {
+                    log('No equipment data found in Firebase');
+                }
+            } catch (error) {
+                log('Error loading equipment:', error);
+                showError('Failed to load equipment list. Please check your connection.');
+            }
+        }
+
+        function startInspection() {
+            const mechanicName = document.getElementById('mechanicName').value.trim();
+            const inspectionDate = document.getElementById('inspectionDate').value;
+            
+            if (!mechanicName) {
+                alert('Please enter your name!');
+                return;
+            }
+            if (!inspectionDate) {
+                alert('Please select the inspection date!');
+                return;
+            }
+            
+            log(`Starting inspection for mechanic: ${mechanicName}`);
+            document.getElementById('mechanicLogin').style.display = 'none';
+            document.getElementById('inspectionForm').style.display = 'block';
+            loadEquipmentList();
+        }
+
+        function loadEquipmentInfo() {
+            const select = document.getElementById('equipmentSelect');
+            const infoDiv = document.getElementById('equipmentInfo');
+            const selectedId = select.value;
+
+            if (selectedId) {
+                const equipment = equipmentList.find(eq => eq.id == selectedId);
+                if (equipment) {
+                    log(`Selected equipment: ${equipment.make} ${equipment.model} (ID: ${equipment.id})`);
+                    
+                    document.getElementById('equipmentDisplay').textContent = 
+                        `${equipment.make} ${equipment.model}`;
+                    document.getElementById('serialDisplay').textContent = equipment.serial;
+                    document.getElementById('locationDisplay').textContent = equipment.location;
+                    
+                    const statusBadge = document.getElementById('currentStatusDisplay');
+                    statusBadge.textContent = equipment.status;
+                    statusBadge.className = 'badge ' + 
+                        (equipment.status === 'In Service' ? 'bg-success' : 
+                         equipment.status === 'Out of Service' ? 'bg-danger' : 'bg-warning');
+                    
+                    infoDiv.style.display = 'block';
+                }
+            } else {
+                infoDiv.style.display = 'none';
+            }
+        }
+
+        function addFault() {
+            const input = document.getElementById('faultInput');
+            const faultText = input.value.trim();
+            
+            if (!faultText) {
+                alert('Please enter a fault description');
+                return;
+            }
+
+            const faultsList = document.getElementById('faultsList');
+            
+            // Remove placeholder if present
+            if (faultsList.children.length === 1 && faultsList.children[0].classList.contains('text-muted')) {
+                faultsList.innerHTML = '';
+            }
+            
+            const faultItem = document.createElement('div');
+            faultItem.className = 'fault-item';
+            faultItem.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-exclamation-circle text-danger me-2"></i>${faultText}</span>
+                    <div>
+                        <button class="btn btn-sm btn-success me-1" type="button" onclick="markResolved(this)" title="Mark as fixed">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" type="button" onclick="removeFault(this)" title="Remove">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            faultsList.appendChild(faultItem);
+            input.value = '';
+            log(`Added fault: ${faultText}`);
+        }
+
+        function markResolved(button) {
+            const faultItem = button.closest('.fault-item');
+            faultItem.classList.add('resolved');
+            const icon = faultItem.querySelector('.fa-exclamation-circle');
+            if (icon) {
+                icon.className = 'fas fa-check-circle text-success me-2';
+            }
+            button.disabled = true;
+            log('Fault marked as resolved');
+        }
+
+        function removeFault(button) {
+            if (confirm('Remove this fault from the list?')) {
+                button.closest('.fault-item').remove();
+                
+                // Show placeholder if no faults
+                const faultsList = document.getElementById('faultsList');
+                if (faultsList.children.length === 0) {
+                    faultsList.innerHTML = '<div class="text-muted text-center p-3">No faults added yet</div>';
+                }
+                log('Fault removed');
+            }
+        }
+
+        function previewPhotos() {
+            const files = document.getElementById('equipmentPhotos').files;
+            const preview = document.getElementById('photoPreview');
+            preview.innerHTML = '';
+
+            if (files.length > 10) {
+                alert('Maximum 10 photos allowed. Please select fewer photos.');
+                document.getElementById('equipmentPhotos').value = '';
+                return;
+            }
+
+            log(`Selected ${files.length} photos for upload`);
+            
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const col = document.createElement('div');
+                    col.className = 'col-4 col-md-3';
+                    col.innerHTML = `
+                        <img src="${e.target.result}" class="photo-preview img-fluid" 
+                             onclick="window.open('${e.target.result}', '_blank')"
+                             title="Click to enlarge">
+                    `;
+                    preview.appendChild(col);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function submitForm() {
+            const user = firebase.auth().currentUser;
+            if (!user || !allowedFieldUsers.includes(user.email.toLowerCase())) {
+                alert('Please sign in before submitting an inspection.');
+                return;
+            }
+            const equipmentSelect = document.getElementById('equipmentSelect');
+            const equipmentId = equipmentSelect.value;
+            const mechanicName = document.getElementById('mechanicName').value.trim();
+            
+            // Validation
+            if (!equipmentId) {
+                alert('Please select equipment!');
+                return;
+            }
+            if (!mechanicName) {
+                alert('Please enter your name!');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                // Show loading state
+                submitBtn.innerHTML = '<span class="loading-spinner me-2"></span>Saving...';
+                submitBtn.disabled = true;
+
+                // Collect form data
+                const formData = {
+                    equipmentId: parseInt(equipmentId),
+                    status: document.getElementById('fieldStatus').value,
+                    engineHours: parseFloat(document.getElementById('engineHours').value) || 0,
+                    inspectionDate: document.getElementById('inspectionDate').value,
+                    mechanicName: mechanicName,
+                    notes: document.getElementById('inspectionNotes').value.trim(),
+                    maintenanceNotes: document.getElementById('maintenanceNotes').value.trim(),
+                    timestamp: new Date().toISOString()
+                };
+
+                log('Form data collected:', formData);
+
+                // Collect faults
+                const faults = [];
+                document.querySelectorAll('#faultsList .fault-item').forEach(item => {
+                    if (!item.classList.contains('text-muted')) {
+                        const faultText = item.querySelector('span').textContent.replace(/[^\w\s]/g, '').trim();
+                        const resolved = item.classList.contains('resolved');
+                        
+                        faults.push({
+                            id: Date.now() + Math.random(),
+                            text: faultText,
+                            resolved: resolved,
+                            resolvedTimestamp: resolved ? new Date().toISOString() : null,
+                            reportedBy: mechanicName,
+                            reportedDate: formData.timestamp
+                        });
+                    }
+                });
+                log(`Collected ${faults.length} faults`);
+
+                // Collect maintenance
+                const maintenance = {
+                    oilChange: document.getElementById('oilChange').checked,
+                    fuelFilter: document.getElementById('fuelFilter').checked,
+                    hydraulicFilter: document.getElementById('hydraulicFilter').checked,
+                    otherMaintenance: document.getElementById('otherMaintenance').checked
+                };
+                log('Maintenance data:', maintenance);
+
+                // Upload images
+                const imageFiles = document.getElementById('equipmentPhotos').files;
+                let imageUrls = [];
+                
+                if (imageFiles.length > 0) {
+                    log(`Starting upload of ${imageFiles.length} images...`);
+                    const uploadPromises = [];
+                    
+                    for (let i = 0; i < imageFiles.length; i++) {
+                        const file = imageFiles[i];
+                        // Sanitize filename
+                        const fileExt = file.name.split('.').pop();
+                        const fileName = `field_${equipmentId}_${Date.now()}_${i}.${fileExt}`;
+                        const storageRef = storage.ref().child(`equipment-images/${equipmentId}/${fileName}`);
+                        
+                        uploadPromises.push(
+                            storageRef.put(file).then(snapshot => {
+                                log(`Uploaded image ${i+1}/${imageFiles.length}`);
+                                return snapshot.ref.getDownloadURL();
+                            })
+                        );
+                    }
+                    
+                    imageUrls = await Promise.all(uploadPromises);
+                    log(`Successfully uploaded ${imageUrls.length} images`);
+                }
+
+                // Save to Firebase
+                log('Saving inspection data to Firebase...');
+                await saveInspectionToFirebase(formData, faults, maintenance, imageUrls);
+                
+                // Show success
+                document.getElementById('inspectionForm').style.display = 'none';
+                document.getElementById('successMessage').style.display = 'block';
+                log('Inspection saved successfully!');
+                
+            } catch (error) {
+                log('ERROR saving inspection:', error);
+                showError(error.message || 'Failed to save inspection. Please try again.');
+                
+                // Reset button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function saveInspectionToFirebase(formData, faults, maintenance, imageUrls) {
+            const docRef = db.collection('equipmentData').doc('main');
+            const doc = await docRef.get();
+            
+            if (!doc.exists) {
+                throw new Error('Equipment data not found in database');
+            }
+
+            // Create a deep copy of the data to work with
+            const data = JSON.parse(JSON.stringify(doc.data()));
+            const equipmentId = formData.equipmentId;
+
+            log('Starting Firebase save for equipment ID:', equipmentId);
+
+            // 1. Ensure all required objects exist at root level
+            if (!data.equipment) {
+                data.equipment = [];
+                log('Created equipment array');
+            }
+            if (!data.serviceHistory) {
+                data.serviceHistory = {};
+                log('Created serviceHistory object');
+            }
+            if (!data.equipmentNotes) {
+                data.equipmentNotes = {};
+                log('Created equipmentNotes object');
+            }
+            if (!data.equipmentMetrics) {
+                data.equipmentMetrics = {};
+                log('Created equipmentMetrics object');
+            }
+            if (!data.equipmentFaults) {
+                data.equipmentFaults = {};
+                log('Created equipmentFaults object');
+            }
+            if (!data.equipmentMaintenance) {
+                data.equipmentMaintenance = {};
+                log('Created equipmentMaintenance object');
+            }
+            if (!data.equipmentImages) {
+                data.equipmentImages = {};
+                log('Created equipmentImages object');
+            }
+
+            // 2. Ensure equipment-specific objects exist
+            if (!data.serviceHistory[equipmentId]) {
+                data.serviceHistory[equipmentId] = [];
+                log('Created serviceHistory array for equipment');
+            }
+            if (!data.equipmentNotes[equipmentId]) {
+                data.equipmentNotes[equipmentId] = [];
+                log('Created equipmentNotes array for equipment');
+            }
+            if (!data.equipmentMetrics[equipmentId]) {
+                data.equipmentMetrics[equipmentId] = {};
+                log('Created equipmentMetrics object for equipment');
+            }
+            if (!data.equipmentFaults[equipmentId]) {
+                data.equipmentFaults[equipmentId] = [];
+                log('Created equipmentFaults array for equipment');
+            }
+            if (!data.equipmentMaintenance[equipmentId]) {
+                data.equipmentMaintenance[equipmentId] = {};
+                log('Created equipmentMaintenance object for equipment');
+            }
+            if (!data.equipmentImages[equipmentId]) {
+                data.equipmentImages[equipmentId] = {};
+                log('Created equipmentImages object for equipment');
+            }
+
+            // 3. Ensure albums array exists
+            if (!data.equipmentImages[equipmentId].albums) {
+                data.equipmentImages[equipmentId].albums = [];
+                log('Created albums array for equipment');
+            }
+
+            // 4. Update equipment status
+            const equipmentIndex = data.equipment.findIndex(eq => eq && eq.id === equipmentId);
+            if (equipmentIndex !== -1) {
+                data.equipment[equipmentIndex].status = formData.status;
+                log('Updated equipment status to:', formData.status);
+            } else {
+                log('WARNING: Equipment not found in list, ID:', equipmentId);
+            }
+
+            // 5. Update metrics
+            data.equipmentMetrics[equipmentId].engineHours = formData.engineHours;
+            log('Updated engine hours to:', formData.engineHours);
+
+            // 6. Add faults (if any)
+            if (faults && faults.length > 0) {
+                data.equipmentFaults[equipmentId].push(...faults);
+                log('Added', faults.length, 'faults');
+            }
+
+            // 7. Update maintenance (if any)
+            if (maintenance) {
+                if (maintenance.oilChange) {
+                    data.equipmentMaintenance[equipmentId].engineOil = formData.engineHours;
+                    log('Recorded oil change at', formData.engineHours, 'hours');
+                }
+                if (maintenance.fuelFilter) {
+                    data.equipmentMaintenance[equipmentId].fuelFilter = formData.engineHours;
+                    log('Recorded fuel filter change at', formData.engineHours, 'hours');
+                }
+                if (maintenance.hydraulicFilter) {
+                    data.equipmentMaintenance[equipmentId].hydraulicFilter = formData.engineHours;
+                    log('Recorded hydraulic filter change at', formData.engineHours, 'hours');
+                }
+            }
+
+            // 8. Add service record
+            const serviceRecord = {
+                id: Date.now(),
+                date: formData.inspectionDate,
+                type: 'Field Inspection',
+                mechanics: formData.mechanicName,
+                description: formData.maintenanceNotes || 'Routine field inspection',
+                notes: formData.notes || '',
+                timestamp: formData.timestamp
+            };
+            data.serviceHistory[equipmentId].push(serviceRecord);
+            log('Added service record');
+
+            // 9. Add notes (if any)
+            if (formData.notes && formData.notes.trim() !== '') {
+                const note = {
+                    id: Date.now(),
+                    content: `Field inspection by ${formData.mechanicName}: ${formData.notes}`,
+                    timestamp: formData.timestamp,
+                    mechanic: formData.mechanicName
+                };
+                data.equipmentNotes[equipmentId].push(note);
+                log('Added notes');
+            }
+
+            // 10. Add photos (if any)
+            if (imageUrls && imageUrls.length > 0) {
+                data.equipmentImages[equipmentId].albums.push({
+                    id: Date.now(),
+                    title: `Field Inspection - ${formData.inspectionDate} by ${formData.mechanicName}`,
+                    timestamp: formData.timestamp,
+                    mechanic: formData.mechanicName,
+                    images: imageUrls.map(url => ({ url }))
+                });
+                log('Added', imageUrls.length, 'photos to album');
+            }
+
+            // Save to Firebase
+            log('Writing data to Firebase...');
+            await docRef.set(data);
+            log('Firebase write complete');
+            return true;
+        }
+
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('inspectionForm').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function clearForm() {
+            // Reset all sections
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('inspectionForm').style.display = 'none';
+            document.getElementById('mechanicLogin').style.display = 'block';
+            document.getElementById('debugConsole').style.display = 'none';
+            document.getElementById('debugConsole').innerHTML = '';
+            
+            // Reset form fields
+            document.getElementById('equipmentSelect').innerHTML = '<option value="">-- Choose Equipment --</option>';
+            document.getElementById('equipmentInfo').style.display = 'none';
+            document.getElementById('engineHours').value = '';
+            document.getElementById('fieldStatus').selectedIndex = 0;
+            document.getElementById('faultsList').innerHTML = '<div class="text-muted text-center p-3">No faults added yet</div>';
+            document.getElementById('maintenanceNotes').value = '';
+            document.getElementById('inspectionNotes').value = '';
+            document.getElementById('photoPreview').innerHTML = '';
+            document.getElementById('equipmentPhotos').value = '';
+            
+            // Reset checkboxes
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            
+            // Reset submit button
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit Inspection';
+            submitBtn.disabled = false;
+            
+            log('Form cleared');
+        }
+    </script>
+</body>
+</html>
