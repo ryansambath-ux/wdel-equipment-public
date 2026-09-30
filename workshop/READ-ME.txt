@@ -1,0 +1,28 @@
+KOMATSU WORKSHOP
+PC210-10M0 / PC210LC-10M0. Serial C00001 and up.
+Source shop manual: SEN06701-C0.
+
+HOW TO OPEN
+1. Extract the whole ZIP to a folder. Keep the folder structure intact.
+2. Open index.html in Chrome, Edge or another modern browser.
+3. No internet connection or installation is needed after downloading.
+
+USE
+Diagnose a fault: search an exact monitor code or symptom.
+Repair & test: browse testing, adjusting, disassembly and maintenance topics.
+Full manual: search all extracted text or select a section.
+Select a result to read the original illustrated page or searchable text.
+Use Previous / Next or enter any PDF page number from 1 to 2500.
+Original PDF opens the relevant 50-page source part, at the selected page.
+Saved pages are browser/device bookmarks. Review marks last for this session.
+
+The original diagrams and tables are authoritative. Extracted text loses some
+layout. Use the Original PDF for full-resolution diagrams and measurements.
+Confirm model, serial, tools and safety prerequisites before following a test.
+This app organizes the supplied manual. It does not measure machine faults,
+control equipment or generate an independent diagnosis.
+
+CONTENT
+All 2,500 original manual pages are included as images and full-resolution PDF
+parts, with searchable text and 640 indexed topics. Blank/index-only pages
+remain accessible using the PDF page control.
